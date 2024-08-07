@@ -37,7 +37,6 @@ let customBaudRateInput: HTMLInputElement;
 let dataBitsSelector: HTMLSelectElement;
 let paritySelector: HTMLSelectElement;
 let stopBitsSelector: HTMLSelectElement;
-let flowControlCheckbox: HTMLInput
 
 let portCounter = 1;
 let port: SerialPort | SerialPortPolyfill | undefined;
@@ -56,8 +55,7 @@ term.loadAddon(fitAddon);
 
 term.loadAddon(new WebLinksAddon());
 
-const encoder = new TextEncoder();
-term.onData((data) => {
+term.onData(() => {
   if (port?.writable == null) {
     console.warn(`unable to find writable port`);
     return;
@@ -181,7 +179,6 @@ function markDisconnected(): void {
   dataBitsSelector.disabled = false;
   paritySelector.disabled = false;
   stopBitsSelector.disabled = false;
-  flowControlCheckbox.disabled = false;
   port = undefined;
 }
 
@@ -199,15 +196,12 @@ async function connectToPort(): Promise<void> {
     dataBits: Number.parseInt(dataBitsSelector.value),
     parity: paritySelector.value as ParityType,
     stopBits: Number.parseInt(stopBitsSelector.value),
-    flowControl:
-        flowControlCheckbox.checked ? <const> 'hardware' : <const> 'none',
     bufferSize,
 
     // Prior to Chrome 86 these names were used.
     baudrate: getSelectedBaudRate(),
     databits: Number.parseInt(dataBitsSelector.value),
     stopbits: Number.parseInt(stopBitsSelector.value),
-    rtscts: flowControlCheckbox.checked,
   };
   console.log(options);
 
@@ -219,7 +213,6 @@ async function connectToPort(): Promise<void> {
   dataBitsSelector.disabled = true;
   paritySelector.disabled = true;
   stopBitsSelector.disabled = true;
-  flowControlCheckbox.disabled = true;
 
   try {
     await port.open(options);
@@ -363,7 +356,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   dataBitsSelector = document.getElementById('databits') as HTMLSelectElement;
   paritySelector = document.getElementById('parity') as HTMLSelectElement;
   stopBitsSelector = document.getElementById('stopbits') as HTMLSelectElement;
-  flowControlCheckbox = document.getElementById('rtscts') as HTMLInputElement;
 
   const polyfillSwitcher =
       document.getElementById('polyfill_switcher') as HTMLAnchorElement;
@@ -386,7 +378,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       const portOption = addNewPort(event.target as SerialPort);
     });
     navigator.serial.addEventListener('disconnect', (event) => {
-      const portOption = findPortOption(event.target as SerialPort);
       if (portOption) {
         portOption.remove();
       }
