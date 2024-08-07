@@ -37,10 +37,7 @@ let customBaudRateInput: HTMLInputElement;
 let dataBitsSelector: HTMLSelectElement;
 let paritySelector: HTMLSelectElement;
 let stopBitsSelector: HTMLSelectElement;
-let flowControlCheckbox: HTMLInputElement;
-let echoCheckbox: HTMLInputElement;
-let flushOnEnterCheckbox: HTMLInputElement;
-let autoconnectCheckbox: HTMLInputElement;
+let flowControlCheckbox: HTMLInput
 
 let portCounter = 1;
 let port: SerialPort | SerialPortPolyfill | undefined;
@@ -60,29 +57,13 @@ term.loadAddon(fitAddon);
 term.loadAddon(new WebLinksAddon());
 
 const encoder = new TextEncoder();
-let toFlush = '';
 term.onData((data) => {
-  if (echoCheckbox.checked) {
-    term.write(data);
-  }
-
   if (port?.writable == null) {
     console.warn(`unable to find writable port`);
     return;
   }
 
   const writer = port.writable.getWriter();
-
-  if (flushOnEnterCheckbox.checked) {
-    toFlush += data;
-    if (data === '\r') {
-      writer.write(encoder.encode(toFlush));
-      writer.releaseLock();
-      toFlush = '';
-    }
-  } else {
-    writer.write(encoder.encode(data));
-  }
 
   writer.releaseLock();
 });
@@ -140,30 +121,6 @@ function maybeAddNewPort(port: SerialPort | SerialPortPolyfill): PortOption {
   return addNewPort(port);
 }
 
-/**
- * Download the terminal's contents to a file.
- */
-function downloadTerminalContents(): void {
-  if (!term) {
-    throw new Error('no terminal instance found');
-  }
-
-  if (term.rows === 0) {
-    console.log('No output yet');
-    return;
-  }
-
-  term.selectAll();
-  const contents = term.getSelection();
-  term.clearSelection();
-  const linkContent = URL.createObjectURL(
-      new Blob([new TextEncoder().encode(contents).buffer],
-          {type: 'text/plain'}));
-  const fauxLink = document.createElement('a');
-  fauxLink.download = `terminal_content_${new Date().getTime()}.txt`;
-  fauxLink.href = linkContent;
-  fauxLink.click();
-}
 
 /**
  * Clear the terminal's contents.
@@ -378,10 +335,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  const downloadOutput =
-    document.getElementById('download') as HTMLSelectElement;
-  downloadOutput.addEventListener('click', downloadTerminalContents);
-
   const clearOutput = document.getElementById('clear') as HTMLSelectElement;
   clearOutput.addEventListener('click', clearTerminalContents);
 
@@ -411,19 +364,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   paritySelector = document.getElementById('parity') as HTMLSelectElement;
   stopBitsSelector = document.getElementById('stopbits') as HTMLSelectElement;
   flowControlCheckbox = document.getElementById('rtscts') as HTMLInputElement;
-  echoCheckbox = document.getElementById('echo') as HTMLInputElement;
-  flushOnEnterCheckbox =
-      document.getElementById('enter_flush') as HTMLInputElement;
-  autoconnectCheckbox =
-      document.getElementById('autoconnect') as HTMLInputElement;
-
-  const convertEolCheckbox =
-      document.getElementById('convert_eol') as HTMLInputElement;
-  const convertEolCheckboxHandler = () => {
-    term.options.convertEol = convertEolCheckbox.checked;
-  };
-  convertEolCheckbox.addEventListener('change', convertEolCheckboxHandler);
-  convertEolCheckboxHandler();
 
   const polyfillSwitcher =
       document.getElementById('polyfill_switcher') as HTMLAnchorElement;
@@ -444,10 +384,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!usePolyfill) {
     navigator.serial.addEventListener('connect', (event) => {
       const portOption = addNewPort(event.target as SerialPort);
-      if (autoconnectCheckbox.checked) {
-        portOption.selected = true;
-        connectToPort();
-      }
     });
     navigator.serial.addEventListener('disconnect', (event) => {
       const portOption = findPortOption(event.target as SerialPort);
