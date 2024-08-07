@@ -30,7 +30,7 @@ jobs:
         run: npm run build
         working-directory: ./scratch-gui
 
-      - run: mv -T ./scratch-gui/build ./public/
+      - run: mv -T ./scratch-gui/dist ./public/
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
