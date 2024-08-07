@@ -25,13 +25,17 @@
       margin-right: 1em;
     }
   </style>
-  <script type="module" crossorigin src="./assets/index.15524ea3.js"></script>
+  <script type="module" crossorigin src="./assets/index.12ff3cda.js"></script>
   <link rel="stylesheet" href="./assets/index.ff373be6.css">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
 <body>
 <div class="options">
   <label for="ports">Port:</label>
+  <select id="ports">
+    <option value="prompt">Add a port...</option>
+  </select>
   <button id="connect">Connect</button>
+  <button id="clear">Clear output</button>
   <label for="baudrate">Baud rate:</label>
   <select id="baudrate">
     <option value="9600">9600</option>
