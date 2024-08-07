@@ -370,17 +370,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   const serial = usePolyfill ? polyfill : navigator.serial;
   const ports: (SerialPort | SerialPortPolyfill)[] = await serial.getPorts();
   ports.forEach((port) => addNewPort(port));
-
-  // These events are not supported by the polyfill.
-  // https://github.com/google/web-serial-polyfill/issues/20
-  if (!usePolyfill) {
-    navigator.serial.addEventListener('connect', (event) => {
-      const portOption = addNewPort(event.target as SerialPort);
-    });
-    navigator.serial.addEventListener('disconnect', (event) => {
-      if (portOption) {
-        portOption.remove();
-      }
-    });
-  }
 });
